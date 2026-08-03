@@ -1,4 +1,4 @@
-const KEY = 'leads_santiago_call_state';
+const KEY = 'leads_santiago_state_h';
 
 async function upstash(cmd) {
   const base = process.env.KV_REST_API_URL;
@@ -15,6 +15,16 @@ async function upstash(cmd) {
   return r.json();
 }
 
+function pairsToState(pairs) {
+  const state = {};
+  if (!Array.isArray(pairs)) return state;
+  for (let i = 0; i < pairs.length; i += 2) {
+    const cid = pairs[i];
+    try { state[cid] = JSON.parse(pairs[i + 1]); } catch (e) { /* skip corrupt entry */ }
+  }
+  return state;
+}
+
 module.exports = async function handler(req, res) {
   if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
     res.status(500).json({ error: 'KV no configurado todavía en Vercel (Storage > KV > Connect Project)' });
@@ -23,13 +33,9 @@ module.exports = async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      const { result } = await upstash(['GET', KEY]);
-      let state = {};
-      if (result) {
-        try { state = JSON.parse(result); } catch (e) { state = {}; }
-      }
+      const { result } = await upstash(['HGETALL', KEY]);
       res.setHeader('Cache-Control', 'no-store');
-      res.status(200).json(state);
+      res.status(200).json(pairsToState(result));
       return;
     }
 
@@ -40,13 +46,7 @@ module.exports = async function handler(req, res) {
         res.status(400).json({ error: 'body inválido, se espera { cid, state }' });
         return;
       }
-      const { result } = await upstash(['GET', KEY]);
-      let state = {};
-      if (result) {
-        try { state = JSON.parse(result); } catch (e) { state = {}; }
-      }
-      state[cid] = leadState;
-      await upstash(['SET', KEY, JSON.stringify(state)]);
+      await upstash(['HSET', KEY, cid, JSON.stringify(leadState)]);
       res.status(200).json({ ok: true });
       return;
     }

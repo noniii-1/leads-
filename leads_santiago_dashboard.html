@@ -397,7 +397,7 @@ let callState = loadCallState();
 
 // ---- Sincronización compartida en vivo (API propia + Vercel KV) ----
 const SYNC_ENDPOINT = '/api/state';
-const SYNC_INTERVAL_MS = 3000;
+const SYNC_INTERVAL_MS = 7000;
 let pendingRemoteRender = false;
 let syncFailed = false;
 
@@ -447,9 +447,30 @@ function pushLeadState(cid) {
   });
 }
 
+let syncTimer = null;
+
+function startSyncTimer() {
+  if (syncTimer) return;
+  syncTimer = setInterval(pullState, SYNC_INTERVAL_MS);
+}
+function stopSyncTimer() {
+  if (!syncTimer) return;
+  clearInterval(syncTimer);
+  syncTimer = null;
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    stopSyncTimer();
+  } else {
+    pullState();
+    startSyncTimer();
+  }
+});
+
 setSyncStatus('🔄 Conectando sincronización...', '');
 pullState();
-setInterval(pullState, SYNC_INTERVAL_MS);
+if (!document.hidden) startSyncTimer();
 
 // theme
 const root = document.documentElement;
