@@ -9,9 +9,9 @@ const BODY_TEMPLATE = `Hola equipo de {{nombre_empresa}},
 
 Mi nombre es Tomás, de Nodal — trabajamos con pymes en Santiago ayudándolas a tener presencia digital profesional.
 
-Hoy en día, si un cliente busca "{{rubro}}" y no encuentra tu negocio en Google o llega a una página que se ve anticuada, esa venta se va directo a la competencia. No tener una web (o tener una que no transmite confianza) es probablemente la razón silenciosa por la que estás perdiendo clientes que ni siquiera sabes que existieron.
+Hoy en día, muchos clientes eligen dónde atenderse según la confianza que les da lo que encuentran de un negocio antes de decidir: información clara de tus servicios, fotos, horarios y una forma fácil de agendar. Sin una web propia, esa primera impresión depende solo de lo poco que muestra Google Maps, no puedes ofrecer agenda online fuera de tu horario de atención telefónica, y es más fácil perder frente a la competencia que sí se ve profesional. Es una fuga de clientes silenciosa — pasa todos los días y nunca te enteras de cuántos se fueron a otro lado.
 
-La buena noticia es que ya hicimos algo por ti: diseñamos un boceto real de cómo podría verse la web de {{nombre_empresa}}, pensado en tu rubro, tus servicios y cómo comunicarlos para generar más consultas y ventas.
+La buena noticia es que ya hicimos algo por ti: diseñamos un boceto real de cómo podría verse la web de {{nombre_empresa}}, pensado en tu rubro ({{rubro}}), tus servicios y cómo comunicarlos para generar más consultas y ventas.
 
 No es una plantilla genérica — es un diseño hecho específicamente pensando en tu negocio.
 

@@ -623,7 +623,7 @@ function cardHtml(lead, discardedView) {
       </div>
       <div class="field">
         <label>Rubro / servicio</label>
-        <input type="text" class="email-rubro" value="${escapeHtml(lead.business_type || '')}">
+        <input type="text" class="email-rubro" value="${escapeHtml(lead.category_label || lead.category_tag || '')}">
       </div>
       <div class="field">
         <label>Tu teléfono / WhatsApp</label>
