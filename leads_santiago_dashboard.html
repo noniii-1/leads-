@@ -281,6 +281,34 @@ label.enzo-toggle input { accent-color: #d1495b; }
 }
 .card.discarded { opacity: 0.75; }
 
+.btn-email { background: var(--accent-blue); color: #fff; font-family: inherit; }
+.email-popover {
+  display: none;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  background: var(--bg-alt);
+  flex-direction: column;
+  gap: 8px;
+}
+.email-popover.open { display: flex; }
+.email-popover .field { display: flex; flex-direction: column; gap: 3px; }
+.email-popover label { font-size: 11px; color: var(--text-soft); font-weight: 600; }
+.email-popover input {
+  width: 100%; box-sizing: border-box;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); font-size: 12.5px; padding: 7px 9px; font-family: inherit;
+  outline: none;
+}
+.email-popover input:focus { border-color: var(--accent-blue); }
+.email-popover .actions-row { display: flex; align-items: center; gap: 10px; margin-top: 2px; }
+.btn-send-email { background: var(--accent-green); color: #fff; border: none; font-family: inherit; }
+.btn-send-email:disabled { opacity: 0.6; cursor: default; transform: none; }
+.email-status { font-size: 12px; }
+.email-status.ok { color: var(--accent-green-dark); }
+.email-status.error { color: #c62828; }
+
 .call-block {
   border-top: 1px dashed var(--border);
   margin-top: 6px;
@@ -569,6 +597,29 @@ function cardHtml(lead, discardedView) {
       ${phoneBtn}
       <a class="btn btn-maps" href="${escapeHtml(lead.maps_url)}" target="_blank" rel="noopener">Ver en Maps</a>
       ${webBtn}
+      <button type="button" class="btn btn-email">📧 Contactar por correo</button>
+    </div>
+    <div class="email-popover">
+      <div class="field">
+        <label>Correo destino</label>
+        <input type="email" class="email-to" placeholder="contacto@negocio.cl">
+      </div>
+      <div class="field">
+        <label>Nombre de la empresa</label>
+        <input type="text" class="email-empresa" value="${escapeHtml(lead.name || '')}">
+      </div>
+      <div class="field">
+        <label>Rubro / servicio</label>
+        <input type="text" class="email-rubro" value="${escapeHtml(lead.business_type || '')}">
+      </div>
+      <div class="field">
+        <label>Tu teléfono / WhatsApp</label>
+        <input type="text" class="email-telefono" placeholder="+56 9 1234 5678">
+      </div>
+      <div class="actions-row">
+        <button type="button" class="btn btn-send-email">Enviar</button>
+        <span class="email-status"></span>
+      </div>
     </div>
     <div class="call-block">
       <label class="call-toggle potential-toggle">
@@ -674,7 +725,85 @@ function attachCardEvents(grid) {
         render();
       });
     }
+
+    const emailBtn = card.querySelector('.btn-email');
+    const popover = card.querySelector('.email-popover');
+    if (emailBtn && popover) {
+      const telInput = popover.querySelector('.email-telefono');
+      telInput.value = localStorage.getItem('senderPhone') || '';
+      emailBtn.addEventListener('click', () => {
+        const opening = !popover.classList.contains('open');
+        document.querySelectorAll('.email-popover.open').forEach(p => { if (p !== popover) p.classList.remove('open'); });
+        popover.classList.toggle('open', opening);
+        if (opening) popover.querySelector('.email-to').focus();
+      });
+      const sendBtn = popover.querySelector('.btn-send-email');
+      const statusEl = popover.querySelector('.email-status');
+      sendBtn.addEventListener('click', () => sendProposalEmail(popover, sendBtn, statusEl));
+    }
   });
+}
+
+function getEmailAccessKey() {
+  let key = localStorage.getItem('emailAccessKey');
+  if (!key) {
+    key = window.prompt('Clave de acceso para enviar correos (se guarda en este navegador):') || '';
+    if (key) localStorage.setItem('emailAccessKey', key);
+  }
+  return key;
+}
+
+async function sendProposalEmail(popover, sendBtn, statusEl) {
+  const to = popover.querySelector('.email-to').value.trim();
+  const nombreEmpresa = popover.querySelector('.email-empresa').value.trim();
+  const rubro = popover.querySelector('.email-rubro').value.trim();
+  const telefono = popover.querySelector('.email-telefono').value.trim();
+
+  statusEl.textContent = '';
+  statusEl.className = 'email-status';
+
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRe.test(to)) {
+    statusEl.textContent = 'Correo inválido.';
+    statusEl.className = 'email-status error';
+    return;
+  }
+  if (!nombreEmpresa || !rubro || !telefono) {
+    statusEl.textContent = 'Completa empresa, rubro y teléfono.';
+    statusEl.className = 'email-status error';
+    return;
+  }
+
+  const key = getEmailAccessKey();
+  if (!key) {
+    statusEl.textContent = 'Se necesita la clave de acceso para enviar.';
+    statusEl.className = 'email-status error';
+    return;
+  }
+
+  localStorage.setItem('senderPhone', telefono);
+
+  sendBtn.disabled = true;
+  statusEl.textContent = 'Enviando...';
+  try {
+    const r = await fetch('/api/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to, nombreEmpresa, rubro, telefono, key }),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      if (r.status === 401) localStorage.removeItem('emailAccessKey');
+      throw new Error(data.error || ('Error ' + r.status));
+    }
+    statusEl.textContent = '✅ Correo enviado a ' + to;
+    statusEl.className = 'email-status ok';
+  } catch (e) {
+    statusEl.textContent = '❌ ' + (e.message || 'No se pudo enviar');
+    statusEl.className = 'email-status error';
+  } finally {
+    sendBtn.disabled = false;
+  }
 }
 
 function getFiltered() {

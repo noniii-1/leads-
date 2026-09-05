@@ -1,3 +1,6 @@
 .venv-scrapling/
 __pycache__/
 *.pyc
+node_modules/
+.env
+.env.local
