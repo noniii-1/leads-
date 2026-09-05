@@ -442,7 +442,20 @@ function maybeRenderFromRemote() {
     pendingRemoteRender = true;
     return;
   }
+  if (document.querySelector('.email-popover.open')) {
+    pendingRemoteRender = true;
+    return;
+  }
   render();
+}
+
+// Aplica un render que quedó pendiente (por edición en curso) apenas
+// deja de haber algo abierto que se perdería con el redibujado.
+function flushPendingRenderIfIdle() {
+  if (pendingRemoteRender && !document.querySelector('.email-popover.open')) {
+    pendingRemoteRender = false;
+    render();
+  }
 }
 
 async function pullState() {
@@ -735,7 +748,11 @@ function attachCardEvents(grid) {
         const opening = !popover.classList.contains('open');
         document.querySelectorAll('.email-popover.open').forEach(p => { if (p !== popover) p.classList.remove('open'); });
         popover.classList.toggle('open', opening);
-        if (opening) popover.querySelector('.email-to').focus();
+        if (opening) {
+          popover.querySelector('.email-to').focus();
+        } else {
+          flushPendingRenderIfIdle();
+        }
       });
       const sendBtn = popover.querySelector('.btn-send-email');
       const statusEl = popover.querySelector('.email-status');
