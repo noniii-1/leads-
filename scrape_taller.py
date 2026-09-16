@@ -75,7 +75,7 @@ DETAILING_KEYWORDS = [
     "car care detailing", "detailing de lujo", "auto spa detailing",
     "taller de detailing",
 ]
-DETAILING_MIN_REVIEWS = 10
+DETAILING_MIN_REVIEWS = 5
 
 
 def build_queries():
@@ -428,6 +428,13 @@ def run_batch(queries, session):
                 if is_imprecise_location(href):
                     seen_names.add(key)
                     continue
+                if '/' in rec["name"] or '%2f' in href.lower():
+                    # un "/" en el nombre del negocio genera una URL de Maps
+                    # con %2F en el segmento del nombre -- visto en vivo: esto
+                    # cuelga el fetch indefinidamente y agota los reintentos
+                    # (caso real: "PULIDO DE AUTO / PULIDOS DE LUJO/SIMUNIZADO")
+                    seen_names.add(key)
+                    continue
                 seen_names.add(key)
 
                 detail = check_detail(session, href)
@@ -459,29 +466,11 @@ def run_batch(queries, session):
                 rec["identidad_visual_revisada"] = False
                 rec["has_photos"] = detail["has_photos"]
 
-                if DETAILING_ONLY:
-                    # requisito duro: instagram encontrado y publico (no solo
-                    # anotado). "activo en ultimos 30 dias" sigue sin poder
-                    # verificarse sin login -- esto confirma existencia/perfil
-                    # publico, que es el maximo automatizable.
-                    if rec["instagram_handle"]:
-                        ig_result = ig_check_profile(session, rec["instagram_handle"])
-                        rec["instagram_status"] = (
-                            "perfil_publico_confirmado_actividad_no_verificada"
-                            if ig_result["exists"] else None
-                        )
-                    else:
-                        guess = ig_best_guess_handle(rec["name"])
-                        ig_result = ig_check_profile(session, guess) if guess else {"exists": None}
-                        if ig_result["exists"]:
-                            rec["instagram_handle"] = guess
-                            rec["instagram_source"] = "adivinado_por_nombre"
-                            rec["instagram_status"] = "perfil_encontrado_por_nombre_verificar_manualmente"
-                        else:
-                            rec["instagram_status"] = None
-                    time.sleep(3.0)
-                    if not rec["instagram_status"]:
-                        continue  # sin instagram confirmado -> no cumple el requisito pedido
+                # Instagram ya NO es requisito duro (el usuario pidio sacarlo
+                # para priorizar volumen) -- se guarda igual si Maps ya lo
+                # traia como link directo (alta confianza, no cuesta nada
+                # extra), pero no se hace fetch/verificacion activa ni se
+                # descarta un lead por no tenerlo.
 
                 with open(OUT_PATH, "a", encoding="utf-8") as fout:
                     fout.write(json.dumps(rec, ensure_ascii=False) + "\n")

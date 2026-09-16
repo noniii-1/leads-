@@ -198,21 +198,31 @@ def load_photo_enrichment():
     return by_name
 
 
-def classify(marca_clara, has_photos, tiene_ig):
+def classify(marca_clara, has_photos, tiene_ig, rubro="taller_mecanico"):
     """
-    DESCARTAR: nombre generico + sin fotos + sin instagram (ningun indicio
-    de marca detectable automaticamente).
-    PRIORIZAR: nombre con identidad de marca Y tiene fotos propias cargadas
-    (instagram es plus, no requisito).
-    REVISAR: todo lo demas -- cumple algun indicio pero no todos. Tambien
-    cae aca si el dato de fotos todavia no se enriquecio (has_photos=None):
-    nunca se descarta ni prioriza por un dato que no se pudo verificar.
+    detailing_automotriz: simplificado por pedido del usuario (instagram ya
+    no pesa, se saco como requisito para priorizar volumen):
+      DESCARTAR: nombre generico (sin ningun indicio de marca propia).
+      PRIORIZAR: nombre con marca Y tiene fotos propias cargadas.
+      REVISAR: nombre con marca pero sin fotos (o fotos aun sin enriquecer).
 
-    Ojo: "fotos propias" aca es presencia/ausencia (se detecta con
-    confianza), NO calidad ni si el rotulo se ve cuidado -- eso sigue
-    siendo criterio manual (identidad_visual_revisada), igual que si hay
-    una descripcion redactada (no se pudo automatizar de forma confiable).
+    taller_mecanico: quedo "cerrado" con la regla original (3 senales) antes
+    de este cambio -- se mantiene igual para no re-descartar leads que ya
+    habian quedado incluidos con ese criterio mas permisivo.
+      DESCARTAR: nombre generico Y sin fotos Y sin instagram (los 3 a la vez).
+      PRIORIZAR: nombre con marca Y tiene fotos.
+      REVISAR: todo lo demas.
+
+    Ojo: "fotos propias" es presencia/ausencia (se detecta con confianza),
+    NO calidad ni si el rotulo se ve cuidado -- eso sigue siendo criterio
+    manual (identidad_visual_revisada), igual que si hay una descripcion
+    redactada (no se pudo automatizar de forma confiable).
     """
+    if rubro == "detailing_automotriz":
+        if not marca_clara:
+            return "descartar"
+        return "priorizar" if has_photos else "revisar"
+
     if has_photos is None:
         return "revisar"
     if not marca_clara and not has_photos and not tiene_ig:
@@ -233,15 +243,19 @@ def main():
     print("descartados por direccion no recuperable (bug de parseo, no cumplen criterio 3):", len(no_addr))
     print("leads con direccion valida:", len(leads))
 
-    # piso de calidad: leads con <10 resenas son mayormente "talleres de
-    # barrio" chicos/informales -- no el perfil que se quiere para la venta.
-    # Se filtra aca (retroactivo, sin re-scrapear) porque el harvester
-    # original de taller_mecanico corrio con MIN_REVIEWS=1; las corridas
-    # nuevas ya piden 10+ desde el harvest.
-    low_reviews = [r for r in leads if (r.get("reviews") or 0) < 10]
-    leads = [r for r in leads if (r.get("reviews") or 0) >= 10]
-    print("descartados por <10 resenas (\"talleres de barrio\"):", len(low_reviews))
-    print("leads con 10+ resenas:", len(leads))
+    # piso de calidad por rubro: taller_mecanico se cerro con 10+ (los con
+    # menos resenas eran mayormente "talleres de barrio"); detailing baja a
+    # 5+ por pedido del usuario, para priorizar volumen ahora que instagram
+    # ya no filtra.
+    REVIEW_FLOOR = {"taller_mecanico": 10, "detailing_automotriz": 5}
+
+    def floor_for(r):
+        return REVIEW_FLOOR.get(r.get("rubro", "taller_mecanico"), 10)
+
+    low_reviews = [r for r in leads if (r.get("reviews") or 0) < floor_for(r)]
+    leads = [r for r in leads if (r.get("reviews") or 0) >= floor_for(r)]
+    print("descartados por piso de resenas (10 taller_mecanico / 5 detailing):", len(low_reviews))
+    print("leads sobre el piso de resenas:", len(leads))
 
     entries = []
     for i, rec in enumerate(leads, start=1):
@@ -273,7 +287,7 @@ def main():
         if has_photos is None:
             has_photos = photo_by_name.get(name.lower())
         marca_clara = not is_generic_name(name)
-        clasificacion = classify(marca_clara, has_photos, bool(instagram_handle))
+        clasificacion = classify(marca_clara, has_photos, bool(instagram_handle), rubro)
         if clasificacion == "descartar":
             continue
 
