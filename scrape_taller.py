@@ -26,6 +26,7 @@ import sys
 import io
 import time
 import json
+import glob
 import threading
 import unicodedata
 from scrapling.fetchers import StealthySession
@@ -36,7 +37,7 @@ from parse_utils import parse_article
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
-MIN_REVIEWS = 1
+MIN_REVIEWS = 10
 MAX_REVIEWS_FOR_AGE_CHECK = 200
 MIN_AGE_DAYS = 183
 MAX_AGE_DAYS = 1095
@@ -44,7 +45,11 @@ WATCHDOG_SECS = 100
 
 SHARD_INDEX = int(sys.argv[1]) if len(sys.argv) > 1 else 0
 SHARD_COUNT = int(sys.argv[2]) if len(sys.argv) > 2 else 1
-OUT_PATH = f"verified_taller_shard{SHARD_INDEX}.jsonl"
+# modo opcional "detailing" (3er arg): solo corre las queries de detailing,
+# en su propio archivo de salida, para ampliar ese rubro sin re-escanear
+# todas las queries de taller mecanico ya cubiertas
+DETAILING_ONLY = len(sys.argv) > 3 and sys.argv[3] == "detailing"
+OUT_PATH = f"verified_detailing_shard{SHARD_INDEX}.jsonl" if DETAILING_ONLY else f"verified_taller_shard{SHARD_INDEX}.jsonl"
 
 COMUNAS = [
     "Santiago Centro", "Providencia", "Las Condes", "Vitacura", "Lo Barnechea",
@@ -61,15 +66,24 @@ MECHANIC_KEYWORDS = [
     "mecanica automotriz", "taller de mantencion automotriz", "taller mecanico particular",
 ]
 DETAILING_KEYWORDS = [
-    "detailing automotriz", "pulido y detailing automotriz", "lavado y detailing de autos",
+    "estetica automotriz", "detailing automotriz", "detailing de autos",
+    "car detailing", "auto detailing", "pulido y detailing automotriz",
+    "pulido de pintura automotriz", "encerado y pulido de autos",
+    "sellado ceramico automotriz", "lavado premium de autos",
+    "brillado de autos", "revitalizado automotriz", "limpieza premium de autos",
+    "tapiceria y detailing", "vidrio ceramico automotriz", "pulido de faros y autos",
+    "car care detailing", "detailing de lujo", "auto spa detailing",
+    "taller de detailing",
 ]
+DETAILING_MIN_REVIEWS = 10
 
 
 def build_queries():
     queries = []
     for comuna in COMUNAS:
-        for kw in MECHANIC_KEYWORDS:
-            queries.append((f"{kw} {comuna} Santiago Chile", comuna, "taller_mecanico"))
+        if not DETAILING_ONLY:
+            for kw in MECHANIC_KEYWORDS:
+                queries.append((f"{kw} {comuna} Santiago Chile", comuna, "taller_mecanico"))
         for kw in DETAILING_KEYWORDS:
             queries.append((f"{kw} {comuna} Santiago Chile", comuna, "detailing_automotriz"))
     return [q for i, q in enumerate(queries) if i % SHARD_COUNT == SHARD_INDEX]
@@ -91,6 +105,18 @@ AUTO_KEYWORDS = [_norm(k) for k in [
     'taller mecanico', 'mecanica automotriz', 'servicio automotriz',
     'detailing automotriz', 'detailing de auto', 'taller multimarca',
     'auto repair', 'car detailing', 'pulido automotriz', 'car service',
+]]
+
+# is_real_auto necesita las frases exactas de arriba O esta combinacion mas
+# flexible: una palabra de contexto automotriz + una palabra de servicio,
+# en cualquier orden/posicion del nombre (no pegadas). Frase-exacta era
+# demasiado rigida -- un negocio real como "DETAILING SU&PER AUTOMOTRIZ" se
+# rechazaba porque "detailing automotriz" no aparecia pegado. "detailing" es
+# suficientemente inequivoco en Chile como para aceptarlo solo.
+AUTO_CONTEXT_TOKENS = [_norm(k) for k in ['automotriz', 'automotor', 'vehicular', 'de autos', 'de auto ']]
+SERVICE_TOKENS = [_norm(k) for k in [
+    'taller', 'mecanic', 'pulido', 'encerado', 'estetica', 'lavado', 'sellado',
+    'multimarca', 'tapiceria', 'brillado', 'revitalizado', 'detailing',
 ]]
 
 DEALER_WORDS = ['concesionario', 'distribuidor oficial', 'servicio oficial', 'agencia oficial', 'sucursal']
@@ -160,7 +186,13 @@ def is_real_auto(rec):
     if cat_norm in CLEAR_AUTO_TAGS:
         return True
     hay = _norm(f"{rec['name']} {rec.get('category') or ''}")
-    return any(k in hay for k in AUTO_KEYWORDS)
+    if any(k in hay for k in AUTO_KEYWORDS):
+        return True
+    if 'detailing' in hay:
+        return True
+    has_context = any(t in hay for t in AUTO_CONTEXT_TOKENS)
+    has_service = any(t in hay for t in SERVICE_TOKENS)
+    return has_context and has_service
 
 
 def is_chain_or_dealer(rec):
@@ -230,6 +262,56 @@ def has_real_website(href, text):
     return True
 
 
+# --- Instagram check (solo se usa en modo "detailing", donde el usuario
+# pidio que Instagram activo sea requisito duro y no solo un dato anotado).
+# Logica identica a la de check_instagram.py (detector corregido), duplicada
+# aca en vez de importada para no re-disparar el wrapping de sys.stdout de
+# ese modulo (romperia el stdout de este proceso si se importa dos veces).
+IG_TITLE_HANDLE_RE = re.compile(r'\(@([A-Za-z0-9_.]+)\)')
+IG_NOT_AVAILABLE_MARKERS = (
+    "Página no disponible", "Page Not Found", "Sorry, this page isn't available",
+    "content isn't available", "Profile isn't available", "isn't available",
+)
+IG_FOLLOWERS_LABELS = ("followers", "seguidores")
+
+
+def ig_best_guess_handle(name):
+    norm = unicodedata.normalize('NFKD', name).encode('ascii', 'ignore').decode('ascii')
+    words = re.findall(r'[a-zA-Z0-9]+', norm.lower())
+    return "".join(words)[:30] if words else None
+
+
+def ig_do_open(url):
+    def _action(page):
+        page.wait_for_timeout(2000)
+        return page
+    return _action
+
+
+def ig_check_profile(session, handle):
+    url = f"https://www.instagram.com/{handle}/"
+    try:
+        page = session.fetch(url, page_action=ig_do_open(url), timeout=20000, network_idle=False)
+        txt = page.get_all_text()
+        lines = [l.strip() for l in txt.split("\n") if l.strip()]
+        if not lines:
+            return {"exists": None, "followers": None}
+        title_match = IG_TITLE_HANDLE_RE.search(lines[0])
+        if title_match and title_match.group(1).lower() == handle.lower():
+            followers = None
+            for i, l in enumerate(lines):
+                if l.lower() in IG_FOLLOWERS_LABELS and i > 0:
+                    followers = lines[i - 1]
+                    break
+            return {"exists": True, "followers": followers}
+        if any(m in txt for m in IG_NOT_AVAILABLE_MARKERS):
+            return {"exists": False, "followers": None}
+        return {"exists": None, "followers": None}
+    except Exception as e:
+        print(f"[taller-{SHARD_INDEX}]   ig-check ERROR for @{handle}: {e}", flush=True)
+        return {"exists": None, "followers": None}
+
+
 def do_search(query):
     def _action(page):
         page.wait_for_timeout(800)
@@ -276,6 +358,11 @@ def check_detail(session, href):
         real_site = has_real_website(link_href, txt)
         service_area = bool(SERVICE_AREA_RE.search(txt)) if not link_href else False
         min_days, max_days = parse_review_days(txt)
+        # "Ver fotos" solo aparece cuando hay al menos una foto real cargada
+        # (validado en vivo) -- no mide calidad/si es "propia y cuidada" (eso
+        # sigue siendo criterio manual, como identidad_visual_revisada), solo
+        # presencia/ausencia de fotos
+        has_photos = "Ver fotos" in txt
         return {
             "ok": True,
             "has_real_website": real_site,
@@ -284,6 +371,7 @@ def check_detail(session, href):
             "social_handle": social_handle,
             "min_review_days": min_days,
             "max_review_days": max_days,
+            "has_photos": has_photos,
         }
     except Exception as e:
         print(f"[taller-{SHARD_INDEX}]   detail-check ERROR: {e}", flush=True)
@@ -292,12 +380,14 @@ def check_detail(session, href):
 
 def load_seen():
     seen = set()
-    try:
-        with open(OUT_PATH, "r", encoding="utf-8") as f:
-            for line in f:
-                seen.add(json.loads(line)["name"].strip().lower())
-    except FileNotFoundError:
-        pass
+    paths = [OUT_PATH] + glob.glob("verified_taller_shard*.jsonl") + glob.glob("verified_detailing_shard*.jsonl")
+    for path in set(paths):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                for line in f:
+                    seen.add(json.loads(line)["name"].strip().lower())
+        except FileNotFoundError:
+            pass
     return seen
 
 
@@ -320,7 +410,8 @@ def run_batch(queries, session):
                 key = rec["name"].strip().lower()
                 if key in seen_names:
                     continue
-                if rec["reviews"] < MIN_REVIEWS or rec["reviews"] > MAX_REVIEWS_FOR_AGE_CHECK:
+                min_reviews_floor = DETAILING_MIN_REVIEWS if DETAILING_ONLY else MIN_REVIEWS
+                if rec["reviews"] < min_reviews_floor or rec["reviews"] > MAX_REVIEWS_FOR_AGE_CHECK:
                     continue
                 if rec.get("rating") is not None and rec["rating"] < 3.0:
                     continue
@@ -366,6 +457,31 @@ def run_batch(queries, session):
                 rec["instagram_source"] = "maps_link" if rec["instagram_handle"] else None
                 rec["facebook_handle"] = detail["social_handle"] if detail["social_kind"] == "facebook" else None
                 rec["identidad_visual_revisada"] = False
+                rec["has_photos"] = detail["has_photos"]
+
+                if DETAILING_ONLY:
+                    # requisito duro: instagram encontrado y publico (no solo
+                    # anotado). "activo en ultimos 30 dias" sigue sin poder
+                    # verificarse sin login -- esto confirma existencia/perfil
+                    # publico, que es el maximo automatizable.
+                    if rec["instagram_handle"]:
+                        ig_result = ig_check_profile(session, rec["instagram_handle"])
+                        rec["instagram_status"] = (
+                            "perfil_publico_confirmado_actividad_no_verificada"
+                            if ig_result["exists"] else None
+                        )
+                    else:
+                        guess = ig_best_guess_handle(rec["name"])
+                        ig_result = ig_check_profile(session, guess) if guess else {"exists": None}
+                        if ig_result["exists"]:
+                            rec["instagram_handle"] = guess
+                            rec["instagram_source"] = "adivinado_por_nombre"
+                            rec["instagram_status"] = "perfil_encontrado_por_nombre_verificar_manualmente"
+                        else:
+                            rec["instagram_status"] = None
+                    time.sleep(3.0)
+                    if not rec["instagram_status"]:
+                        continue  # sin instagram confirmado -> no cumple el requisito pedido
 
                 with open(OUT_PATH, "a", encoding="utf-8") as fout:
                     fout.write(json.dumps(rec, ensure_ascii=False) + "\n")
