@@ -9,6 +9,7 @@ Writes final_taller_dataset.json (list of lead dicts, dashboard schema).
 import json
 import re
 import glob
+import hashlib
 
 PHONE_RE = re.compile(r'^(9\s?\d{4}\s?\d{4}|\(2\)\s?\d{3,4}\s?\d{4}|600\s?\d{3}\s?\d{4}|\d{2}\s?\d{4}\s?\d{4})$')
 
@@ -96,6 +97,17 @@ def slugify(s):
     s = s.lower()
     s = re.sub(r"[^a-z0-9]+", "_", s)
     return s.strip("_")[:40]
+
+
+def stable_cid(name, address):
+    # El dashboard guarda el estado marcado por el equipo (contactado, etc)
+    # en Vercel KV usando el cid como clave -- tiene que ser estable entre
+    # corridas de este script, no depender de la posicion en la lista
+    # (indice), porque esa posicion cambia cada vez que se agregan/quitan
+    # leads o se reordena por clasificacion, lo que "resetea" las marcas al
+    # apuntar a un cid nuevo para el mismo negocio.
+    h = hashlib.md5(f"{name.strip().lower()}|{(address or '').strip().lower()}".encode("utf-8")).hexdigest()[:10]
+    return f"gm_taller_{h}_{slugify(name)}"
 
 
 def phone_e164(phone):
@@ -271,7 +283,7 @@ def main():
             web_note = "No tiene sitio web propio (verificado en Maps)."
 
         entry = {
-            "cid": f"gm_taller_{i}_{slugify(name)}",
+            "cid": stable_cid(name, addr),
             "name": name,
             "phone": phone or None,
             "phone_e164": phone_e164(phone),
