@@ -1,0 +1,40 @@
+﻿reason,name,city,rating,reviews,category
+manual-reject,Juan Diego Cabrera Palacios Ventas Y Servicios Automotrices E.I.R.L,Santiago Centro,5.0,1,Servicio de lavado de coches
+manual-reject,Rapido y Brilloso,Santiago Centro,5.0,1,Servicio de limpieza de automóviles
+manual-reject,La Dehesa Limitada,Lo Barnechea,3.7,80,Servicio de lavado de coches
+no-distinctive-content,LAVADO DE AUTO EN MACUL,Macul,4.1,18,Servicio de lavado de coches
+manual-reject,Lavamoto Chile,Macul,4.6,9,Servicio de lavado de coches
+hard-block-category,MULTISERVICIOS JJ SPA - JDC CARS,San Joaquín,5.0,89,Servicio de polarizado de autos
+manual-reject,"Mecanica preventiva, general",La Granja,5.0,1,Servicio de lavado de coches
+manual-reject,Lavados de Autos Cristián,La Pintana,4.0,24,Servicio de lavado de coches
+manual-reject,"Víctor Gutiérrez Valenzuela ""Cano""",San Ramón,4.9,9,Servicio de limpieza de automóviles
+block-substr,Vulcanización hidrovulc,El Bosque,4.9,90,Servicio de lavado de coches
+manual-reject,CAMBIO DE DUEÑO,La Cisterna,4.8,39,Servicio de lavado de coches
+manual-reject,Taller Innovaciones,Lo Espejo,3.8,37,Servicio de lavado de coches
+block-substr,"Estacionamiento, Lavado de Vehículos y Comercio",Estación Central,4.5,19,Servicio de lavado de coches
+block-substr,Servicio Estacionamiento y Taller de Limpieza y Pulido de Vehiculos,Maipú,4.2,27,Aparcamiento de coches compartidos
+no-distinctive-content,Lavado de autos a domicilio en maipu,Maipú,5.0,46,Servicio de lavado de coches
+manual-reject,Lavado De Autos Cecilia,Quinta Normal,4.6,62,Servicio de lavado de coches
+ambiguous-category-no-strong-signal,ZEUS CLEAN LTDA.,Quinta Normal,4.5,4,Fábrica
+manual-reject,Rápido y Brilloso,Renca,5.0,3,Servicio de lavado de coches
+block-substr,"Pulidos, pintura y desabolladuria automotriz",Renca,4.3,4,Taller de reparación de automóviles
+block-substr,Carwash e Estacionamiento Plaza Quilicura,Quilicura,5.0,8,Servicio de lavado de coches
+block-substr,Autolavado detailing y Vulcanización,Huechuraba,5.0,4,Autoservicio de lavado de autos
+hard-block-category,Sicarfilms Spa.,San Bernardo,4.8,45,Servicio de polarizado de autos
+manual-reject,Centro Link,Colina,3.0,4,Servicio de lavado de coches
+ambiguous-category-no-strong-signal,Automotriz RC SPA,Lampa,5.0,11,Taller de reparación de automóviles
+hard-block-category,Tu Espacio Automotriz,Melipilla,5.0,1,Servicio de autos compartidos
+manual-reject,Lavado de autos El Robert,Talagante,4.7,19,Servicio de lavado de coches
+block-substr,FullClean Lavaseco y Lavandería,Talagante,4.1,16,Lavandería
+block-substr,"ESTACIONAMIENTO ""R""",Santiago Centro,3.0,2,Servicio de lavado de coches
+manual-reject,Comercial C&I,Santiago Centro,3.0,2,Servicio de lavado de coches
+ambiguous-category-no-strong-signal,Automotriz jc spa,Santiago Centro,5.0,6,Taller de reparación de automóviles
+manual-reject,Bass Audio Chile,Las Condes,4.1,101,Servicio de lavado de coches
+hard-block-category,Wash Detailing Pro,Lo Barnechea,4.5,2,Mercado de automóviles
+hard-block-category,Centro de Estética Belleza Integral,Buin,4.6,9,Centro de estética
+no-distinctive-content,Lavado de autos en Pedro Aguirre Cerda,Santiago Centro,4.0,15,Servicio de lavado de coches
+hard-block-category,Neymartin Estetica,Lo Barnechea,5.0,2,Esteticista
+block-substr,Láminas de seguridad y polarizado JR,La Granja,5.0,5,Servicio de limpieza de automóviles
+ambiguous-category-no-strong-signal,HAGALGAL SPA,Colina,4.5,57,Taller mecánico
+block-substr,MAXCOT LAVADOS GPS,Melipilla,4.7,3,Servicio de lavado de coches
+hard-block-category,"Ecoesthetic, Clínica Estética.",Talagante,5.0,29,Clínica especializada
