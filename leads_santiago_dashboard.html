@@ -890,10 +890,17 @@ async function openWhatsapp(lead, btn, statusEl) {
   const win = window.open('', '_blank');
 
   try {
+    const hasSocialLink = /instagram|facebook/i.test(lead.web_note || '');
     const r = await fetch('/api/build-whatsapp-link', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nombreEmpresa: lead.name, telefono: lead.phone_e164, key }),
+      body: JSON.stringify({
+        nombreEmpresa: lead.name,
+        telefono: lead.phone_e164,
+        vertical: lead.category_group,
+        hasSocialLink,
+        key,
+      }),
     });
     const data = await r.json().catch(() => ({}));
     if (!r.ok) {
