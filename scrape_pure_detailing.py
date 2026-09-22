@@ -71,15 +71,18 @@ COMUNAS = [
     # todo; aca hay superficie nueva de verdad.
     "Colina", "Lampa", "Buin", "Paine", "Melipilla", "Peñaflor",
     "Talagante", "Padre Hurtado", "Calera de Tango",
+    # tanda 3: mas comunas satelite de la RM sin tocar todavia
+    "Isla de Maipo", "El Monte", "San José de Maipo", "Pirque", "Curacaví",
 ]
 
 DETAILING_KEYWORDS = [
-    # tanda 2 (las 10 de la tanda 1 ya estan agotadas por dedup): frases
-    # distintas para que Maps devuelva otro top-40
-    "ceramic coating autos", "proteccion ceramica autos", "car spa",
-    "autolavado premium", "lavado y detailing de autos", "lavado interior de autos tapiz",
-    "pulido y encerado de autos", "detailing studio", "detailing garage",
-    "restauracion de focos autos", "spa automotriz", "lavado a mano de autos",
+    # tanda 3 (tandas 1 y 2 ya agotadas por dedup): frases nuevas para que
+    # Maps devuelva otro top-40 en las comunas ya cubiertas
+    "detailer de autos", "auto detailer", "detailing profesional automotriz",
+    "wrapping y detailing automotriz", "ppf autos", "vinilo y detailing automotriz",
+    "lavado y encerado a domicilio", "detailing movil automotriz",
+    "limpieza ceramica de autos", "auto shine", "car care center",
+    "detailing boutique automotriz",
 ]
 
 
