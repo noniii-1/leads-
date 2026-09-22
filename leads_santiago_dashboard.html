@@ -289,6 +289,11 @@ label.angel-toggle input { accent-color: #2f80ed; }
 .card.discarded { opacity: 0.75; }
 
 .btn-email { background: var(--accent-blue); color: #fff; font-family: inherit; }
+.btn-whatsapp { background: var(--accent-green); color: #fff; border: none; font-family: inherit; }
+.btn-whatsapp:disabled { opacity: 0.6; cursor: default; transform: none; }
+.whatsapp-status { font-size: 12px; align-self: center; }
+.whatsapp-status.ok { color: var(--accent-green-dark); }
+.whatsapp-status.error { color: #c62828; }
 .email-popover {
   display: none;
   margin-top: 4px;
@@ -620,6 +625,7 @@ function cardHtml(lead, discardedView) {
       <a class="btn btn-maps" href="${escapeHtml(lead.maps_url)}" target="_blank" rel="noopener">Ver en Maps</a>
       ${webBtn}
       <button type="button" class="btn btn-email">📧 Contactar por correo</button>
+      ${lead.phone_e164 ? `<button type="button" class="btn btn-whatsapp">💬 WSP</button><span class="whatsapp-status"></span>` : ''}
     </div>
     <div class="email-popover">
       <div class="field">
@@ -790,6 +796,13 @@ function attachCardEvents(grid) {
       const statusEl = popover.querySelector('.email-status');
       sendBtn.addEventListener('click', () => sendProposalEmail(popover, sendBtn, statusEl));
     }
+
+    const whatsappBtn = card.querySelector('.btn-whatsapp');
+    if (whatsappBtn) {
+      const lead = LEADS.find(l => l.cid === cid);
+      const statusEl = card.querySelector('.whatsapp-status');
+      whatsappBtn.addEventListener('click', () => openWhatsapp(lead, whatsappBtn, statusEl));
+    }
   });
 }
 
@@ -852,6 +865,54 @@ async function sendProposalEmail(popover, sendBtn, statusEl) {
     statusEl.className = 'email-status error';
   } finally {
     sendBtn.disabled = false;
+  }
+}
+
+async function openWhatsapp(lead, btn, statusEl) {
+  if (!lead || !lead.phone_e164) {
+    statusEl.textContent = 'Sin teléfono válido.';
+    statusEl.className = 'whatsapp-status error';
+    return;
+  }
+  const key = getEmailAccessKey();
+  if (!key) {
+    statusEl.textContent = 'Se necesita la clave de acceso.';
+    statusEl.className = 'whatsapp-status error';
+    return;
+  }
+
+  statusEl.textContent = '';
+  statusEl.className = 'whatsapp-status';
+  btn.disabled = true;
+
+  // Se abre la pestaña ya, dentro del mismo gesto de clic, para que el
+  // navegador no la bloquee como popup — se llena apenas llega la URL.
+  const win = window.open('', '_blank');
+
+  try {
+    const r = await fetch('/api/build-whatsapp-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombreEmpresa: lead.name, telefono: lead.phone_e164, key }),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      if (r.status === 401) localStorage.removeItem('emailAccessKey');
+      throw new Error(data.error || ('Error ' + r.status));
+    }
+    if (win) {
+      win.location = data.url;
+    } else {
+      window.open(data.url, '_blank');
+    }
+    statusEl.textContent = '✅ Listo, revisa la pestaña de WhatsApp';
+    statusEl.className = 'whatsapp-status ok';
+  } catch (e) {
+    if (win) win.close();
+    statusEl.textContent = '❌ ' + (e.message || 'No se pudo generar el link');
+    statusEl.className = 'whatsapp-status error';
+  } finally {
+    btn.disabled = false;
   }
 }
 
