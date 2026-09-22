@@ -1,27 +1,23 @@
 const nodemailer = require('nodemailer');
 
 // Plantilla fija del lado del servidor: aunque alguien obtenga la clave de
-// acceso, solo puede disparar ESTA propuesta con estas variables — nunca
-// texto libre arbitrario.
-const SUBJECT_TEMPLATE = '{{nombre_empresa}}, ya tenemos un boceto listo de tu nueva web';
+// acceso, solo puede disparar ESTA propuesta con estas variables, nunca
+// texto libre arbitrario. Contenido alineado con el template de WSP
+// (api/build-whatsapp-link.js): mismo pitch de clientes calificados, mismo
+// gancho de "no tiene web", mismo cierre con opt-out.
+const SUBJECT_TEMPLATE = '{{nombre_empresa}}, así llegan pacientes calificados a tu WhatsApp';
 
-const BODY_TEMPLATE = `Hola equipo de {{nombre_empresa}},
+const BODY_TEMPLATE = `Hola, soy Tomás, ayudo a clínicas dentales en Santiago a que lleguen pacientes ya calificados a tu WhatsApp, no solo consultas curiosas. Vi que {{nombre_empresa}} no tiene página web, por eso probablemente tu info está repartida entre redes y el boca a boca.
 
-Mi nombre es Tomás, de Nodal — trabajamos con pymes en Santiago ayudándolas a tener presencia digital profesional.
+Eso hace que la gente llegue confundida a tu WhatsApp preguntando lo básico, y muchas veces se va sin agendar.
 
-Hoy en día, muchos clientes eligen dónde atenderse según la confianza que les da lo que encuentran de un negocio antes de decidir: información clara de tus servicios, fotos, horarios y una forma fácil de agendar. Sin una web propia, esa primera impresión depende solo de lo poco que muestra Google Maps, no puedes ofrecer agenda online fuera de tu horario de atención telefónica, y es más fácil perder frente a la competencia que sí se ve profesional. Es una fuga de clientes silenciosa — pasa todos los días y nunca te enteras de cuántos se fueron a otro lado.
+Armé un boceto de una página para {{nombre_empresa}}, pensado en tu rubro ({{rubro}}), que filtra eso antes de que lleguen, sin costo ni compromiso.
 
-La buena noticia es que ya hicimos algo por ti: diseñamos un boceto real de cómo podría verse la web de {{nombre_empresa}}, pensado en tu rubro ({{rubro}}), tus servicios y cómo comunicarlos para generar más consultas y ventas.
-
-No es una plantilla genérica — es un diseño hecho específicamente pensando en tu negocio.
-
-Quiero mostrártelo sin costo ni compromiso. Si te gusta lo que ves, conversamos cómo llevarlo a producción; si no, quedas con una idea clara de hacia dónde podría ir tu presencia digital.
-
-¿Tienes 10 minutos esta semana para que te lo muestre?
+¿Tienes 15 minutos esta semana para que te lo muestre? Si no es prioridad ahora, me avisas y no insisto.
 
 Quedo atento,
 Tomás
-Nodal — Diseño y desarrollo web para pymes
+Nodal
 {{telefono}}`;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

@@ -5,11 +5,11 @@
 // el envío real lo dispara la persona al apretar "Enviar" dentro de
 // WhatsApp, a propósito, para no automatizar el envío en sí (ver nota en
 // el mensaje de wa.me sobre riesgo de baneo por bulk-send no oficial).
-const BODY_TEMPLATE = `Hola, soy Tomás — ayudo a clínicas dentales en Santiago a que lleguen pacientes ya calificados a tu WhatsApp, no solo consultas curiosas. Vi que {{nombre_empresa}} no tiene página web — por eso probablemente tu info está repartida entre redes y el boca a boca.
+const BODY_TEMPLATE = `Hola, soy Tomás, ayudo a clínicas dentales en Santiago a que lleguen pacientes ya calificados a tu WhatsApp, no solo consultas curiosas. Vi que {{nombre_empresa}} no tiene página web, por eso probablemente tu info está repartida entre redes y el boca a boca.
 
 Eso hace que la gente llegue confundida a tu WhatsApp preguntando lo básico, y muchas veces se va sin agendar.
 
-Armé un boceto de una página que filtra eso antes de que lleguen — sin costo ni compromiso.
+Armé un boceto de una página que filtra eso antes de que lleguen, sin costo ni compromiso.
 
 ¿15 min esta semana para mostrarte? Si no es prioridad, me avisas y no insisto.`;
 
