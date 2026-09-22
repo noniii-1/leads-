@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-Tercera pasada de filtrado sobre verified_pure_detailing_shard*.jsonl.
-La corrida en vivo (is_pure_detailing_brand dentro del scraper) ya saco
-mucha basura, pero al revisar a mano una muestra aparecieron fugas por
-categoria de Maps (polarizado, clinicas esteticas humanas, lavanderia de
-ropa, estacionamiento, taller de reparacion generico sin ninguna senal real
-de detailing mas alla de la palabra "auto") y nombres puramente
-descriptivos tipo "Lavado de autos a domicilio en <comuna>" que la
-verificacion de "contenido distintivo" no agarraba porque "domicilio"/"en"
-no estaban en la lista de relleno.
+Filtro final sobre verified_pure_detailing_shard*.jsonl (acumula las 2
+tandas de scraping). Cambio de diseno respecto a la version anterior:
+categorias en LISTA BLANCA estricta en vez de lista negra -- la tanda 2
+trajo keywords como "spa automotriz"/"car spa"/"ceramic coating" que
+matchearon por accidente el sufijo legal chileno "SpA" (Sociedad por
+Acciones) en negocios de CUALQUIER rubro (repuestos de moto, aire
+acondicionado, cerrajeria, spa humano, neumaticos...). Una lista negra de
+categorias malas es un juego de whack-a-mole que nunca termina; una lista
+blanca de categorias de lavado/detailing real es mucho mas segura.
+Tambien se saco "spa" suelto de las palabras de senal por nombre (por el
+mismo motivo) -- ahora una categoria ambigua solo pasa con frases
+compuestas tipo "auto spa"/"car spa", nunca con "spa" solo.
 """
 import json, glob, re, csv, unicodedata
 
@@ -35,24 +38,35 @@ for f in files:
 
 recs = list(seen.values())
 
-# categorias de Maps que indican otro rubro por completo (no automotriz) --
-# se descartan siempre, sin excepcion de nombre
-HARD_BLOCK_CATEGORIES = {norm(c) for c in [
-    'Clínica especializada', 'Esteticista', 'Centro de estética',
-    'Servicio de autos compartidos', 'Aparcamiento de coches compartidos',
-    'Lavandería', 'Servicio de polarizado de autos', 'Mercado de automóviles',
+# lista blanca: categorias de Maps que confirman lavado/detailing real.
+# Cualquier categoria FUERA de esta lista necesita una senal fuerte e
+# inequivoca en el nombre para pasar (ver AMBIGUOUS_OK_WITH_SIGNAL) o se
+# descarta directo.
+ALLOWED_CATEGORIES = {norm(c) for c in [
+    'Servicio de lavado de coches', 'Servicio de limpieza de automóviles',
+    'Autoservicio de lavado de autos', 'Servicio de detallado de automóviles',
+    'Servicio de encerado de automóviles', 'Servicio de lavado a presión',
 ]}
-# categorias ambiguas (podrian ser un negocio de detailing mal etiquetado
-# por Maps, o un taller/tienda que no tiene nada que ver) -- se aceptan
-# SOLO si el nombre trae una senal fuerte e inequivoca de detailing
+# categorias ambiguas: pueden ser detailing mal etiquetado por Maps
+# (paso ya visto con "Aces Detail", "Detailing Center") o pueden ser un
+# negocio de otro rubro (taller mecanico, moto, repuestos...) -- pasan
+# SOLO si el nombre trae una frase inequivoca de detailing/lavado
 AMBIGUOUS_CATEGORIES = {norm(c) for c in [
     'Taller de reparación de automóviles', 'Taller de chapa y pintura',
     'Taller mecánico', 'Taller de revisión de automóviles', 'Fábrica',
-    'Tienda de automovilismo', 'Pintura de automóviles',
+    'Tienda de automovilismo', 'Pintura de automóviles', 'Taller de automóviles',
+    'Servicio de restauración de automóviles', 'Tapicería para automóviles',
 ]}
-STRONG_SIGNAL = ['detailing', 'detallado', 'pulido', 'pulida', 'encerado',
-                 'sellado ceramico', 'sellado cerámico', 'estetica automotriz',
-                 'estética automotriz', 'car wash', 'carwash']
+# frases (no palabras sueltas) -- "spa" solo se acepta pegado a auto/car,
+# nunca suelto (choca con el sufijo legal "SpA" de cualquier empresa)
+STRONG_SIGNAL = [norm(s) for s in [
+    'detailing', 'detallado', 'pulido', 'pulida', 'encerado',
+    'sellado ceramico', 'estetica automotriz', 'car wash', 'carwash',
+    'auto spa', 'car spa', 'spa automotriz', 'spa de auto', 'spa del automovil',
+    'autospa', 'carspa', 'ceramic coating', 'brillado',
+]]
+# todo lo que NO esta en la lista blanca ni pasa por AMBIGUOUS+STRONG_SIGNAL
+# se descarta -- ya no hace falta una lista negra de categorias malas.
 
 GENERIC_FILLER_TOKENS = {norm(s) for s in [
     'taller', 'servicio', 'servicios', 'automotriz', 'automotor', 'autos', 'auto',
@@ -61,7 +75,7 @@ GENERIC_FILLER_TOKENS = {norm(s) for s in [
     'pulida', 'encerado', 'brillado', 'sellado', 'ceramico', 'ceramica', 'premium',
     'express', 'central', 'economico', 'economica', 'rapido', 'rapida', 'lujo',
     'basico', 'basica', 'multimarca', 'particular', 'domicilio', 'en', 'a', 'un',
-    'una', 'con', 'para', 'el.', 'sin',
+    'una', 'con', 'para', 'sin', 'autolavado', 'lavadero', 'centro',
 ]}
 COMUNAS_ALL = [
     "Santiago Centro", "Providencia", "Las Condes", "Vitacura", "Lo Barnechea",
@@ -71,7 +85,7 @@ COMUNAS_ALL = [
     "Cerrillos", "Maipú", "Cerro Navia", "Pudahuel", "Lo Prado",
     "Quinta Normal", "Renca", "Quilicura", "Huechuraba", "Conchalí",
     "Independencia", "Recoleta", "Puente Alto", "San Bernardo",
-    "Colina", "Lampa", "Buin", "Paine", "Melipilla", "Peñalolén",
+    "Colina", "Lampa", "Buin", "Paine", "Melipilla", "Peñaflor",
     "Talagante", "Padre Hurtado", "Calera de Tango",
 ]
 COMUNA_TOKENS = {norm(w) for c in COMUNAS_ALL for w in c.split()}
@@ -81,7 +95,14 @@ EXTRA_BLOCK_SUBSTR = ['desabolladur', 'chapa', 'pintura al horno', 'carrozzier',
                       'frenos', 'suspension', 'alineacion', 'balanceo',
                       'mecanica general', 'radiador', 'escape', 'repuestos',
                       'gps', 'vulcaniza', 'polarizado', 'lavaseco y lavanderia',
-                      'estacionamiento']
+                      'estacionamiento', 'lavamoto', 'lavanderia', 'clinica',
+                      'audio', 'cerrajeria', 'barber', 'copec', 'shell ',
+                      'petrobras', 'terpel']
+
+BARRIO_RE = re.compile(
+    r"^(taller|servicio|lavado(s)?( de)?( autos?| auto| automotriz| vehiculos?)?|lavadero( de autos)?|autolavado)"
+    r"\s+(el |la |don |dona |doña )?[a-z]{3,12}$"
+)
 
 
 def has_distinctive_content(name):
@@ -90,27 +111,19 @@ def has_distinctive_content(name):
     return len(remaining) > 0
 
 
-# overrides puntuales encontrados al revisar a mano la lista completa --
-# casos donde la regla general (categoria + contenido distintivo) se
-# equivoca para ese nombre puntual
 MANUAL_REJECT = {norm(n) for n in [
-    'La Dehesa Limitada',            # nombre de barrio + sufijo legal, cero marca
-    'Mecanica preventiva, general',  # es una descripcion de categoria, no un nombre
-    'CAMBIO DE DUEÑO',               # parece un rotulo de estado del listado, no un negocio
-    'Víctor Gutiérrez Valenzuela "Cano"',  # nombre propio pelado, mismo patron "Taller Miguel"
-    'Taller Innovaciones',           # "Taller + palabra generica", sin marca real
-    'Comercial C&I',                 # sin ninguna senal automotriz/de marca
-    'Bass Audio Chile',              # instalador de audio, no detailing
-    'Lavamoto Chile',                # lavado de MOTOS, no autos
-    'Juan Diego Cabrera Palacios Ventas Y Servicios Automotrices E.I.R.L',  # registro formal EIRL, sin marca
-    'Rapido y Brilloso',             # frase generica, aparece repetida en 2 comunas distintas
-    'Lavado de Autos Cecilia',       # "servicio generico + nombre de pila pelado", mismo patron "Taller Miguel"
-    'Lavado de autos El Robert',     # idem, "servicio generico + El + nombre de pila"
-    'Lavados de Autos Cristián',     # idem
-    'Centro Link',                   # cero referencia automotriz/de marca en el nombre
+    'La Dehesa Limitada', 'Mecanica preventiva, general', 'CAMBIO DE DUEÑO',
+    'Víctor Gutiérrez Valenzuela "Cano"', 'Taller Innovaciones', 'Comercial C&I',
+    'Bass Audio Chile', 'Lavamoto Chile',
+    'Juan Diego Cabrera Palacios Ventas Y Servicios Automotrices E.I.R.L',
+    'Rapido y Brilloso', 'Lavado de Autos Cecilia', 'Lavado de autos El Robert',
+    'Lavados de Autos Cristián', 'Centro Link',
+    'Fresh Market',                                    # mercado/almacen, no automotriz
+    'Servicio De Mantencion Y Lavado De Vehiculos Motor',  # descripcion generica, no nombre
+    'Focos',                                           # una sola palabra de servicio, sin marca
 ]}
 MANUAL_KEEP = {norm(n) for n in [
-    'KombiSpa',  # "Kombi" = furgon VW, Maps lo categoriza mal como centro de estetica humano
+    'KombiSpa',
 ]}
 
 
@@ -123,13 +136,15 @@ def decide(rec):
         return True, 'manual-keep'
     if any(b in name_n for b in EXTRA_BLOCK_SUBSTR):
         return False, 'block-substr'
-    if cat_n in HARD_BLOCK_CATEGORIES:
-        return False, 'hard-block-category'
     if cat_n in AMBIGUOUS_CATEGORIES:
         if not any(s in name_n for s in STRONG_SIGNAL):
             return False, 'ambiguous-category-no-strong-signal'
+    elif cat_n not in ALLOWED_CATEGORIES:
+        return False, 'category-not-whitelisted'
     if not has_distinctive_content(rec['name']):
         return False, 'no-distinctive-content'
+    if BARRIO_RE.match(name_n.strip()):
+        return False, 'barrio-pattern'
     return True, 'ok'
 
 

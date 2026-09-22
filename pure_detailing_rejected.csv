@@ -1,40 +1,148 @@
 ﻿reason,name,city,rating,reviews,category
+barrio-pattern,Autolavado LavaPro,Santiago Centro,4.2,155,Servicio de lavado de coches
 manual-reject,Juan Diego Cabrera Palacios Ventas Y Servicios Automotrices E.I.R.L,Santiago Centro,5.0,1,Servicio de lavado de coches
 manual-reject,Rapido y Brilloso,Santiago Centro,5.0,1,Servicio de limpieza de automóviles
 manual-reject,La Dehesa Limitada,Lo Barnechea,3.7,80,Servicio de lavado de coches
 no-distinctive-content,LAVADO DE AUTO EN MACUL,Macul,4.1,18,Servicio de lavado de coches
 manual-reject,Lavamoto Chile,Macul,4.6,9,Servicio de lavado de coches
-hard-block-category,MULTISERVICIOS JJ SPA - JDC CARS,San Joaquín,5.0,89,Servicio de polarizado de autos
+category-not-whitelisted,MULTISERVICIOS JJ SPA - JDC CARS,San Joaquín,5.0,89,Servicio de polarizado de autos
 manual-reject,"Mecanica preventiva, general",La Granja,5.0,1,Servicio de lavado de coches
 manual-reject,Lavados de Autos Cristián,La Pintana,4.0,24,Servicio de lavado de coches
 manual-reject,"Víctor Gutiérrez Valenzuela ""Cano""",San Ramón,4.9,9,Servicio de limpieza de automóviles
+barrio-pattern,lavado nativo,El Bosque,3.1,7,Servicio de lavado de coches
+barrio-pattern,Lavados Autos Markitos,El Bosque,5.0,6,Servicio de lavado de coches
 block-substr,Vulcanización hidrovulc,El Bosque,4.9,90,Servicio de lavado de coches
+barrio-pattern,Lavado Automotriz Artesanal,La Cisterna,4.0,2,Servicio de lavado de coches
 manual-reject,CAMBIO DE DUEÑO,La Cisterna,4.8,39,Servicio de lavado de coches
+no-distinctive-content,Premium Lavadero de Autos,San Miguel,4.3,143,Servicio de lavado de coches
+barrio-pattern,Lavado de Autos El Llano,San Miguel,4.6,36,Servicio de lavado de coches
 manual-reject,Taller Innovaciones,Lo Espejo,3.8,37,Servicio de lavado de coches
+no-distinctive-content,Autolavado,Estación Central,4.2,103,Servicio de lavado de coches
 block-substr,"Estacionamiento, Lavado de Vehículos y Comercio",Estación Central,4.5,19,Servicio de lavado de coches
+barrio-pattern,Lavado de autos jsp,Cerrillos,5.0,2,Servicio de lavado de coches
 block-substr,Servicio Estacionamiento y Taller de Limpieza y Pulido de Vehiculos,Maipú,4.2,27,Aparcamiento de coches compartidos
 no-distinctive-content,Lavado de autos a domicilio en maipu,Maipú,5.0,46,Servicio de lavado de coches
+barrio-pattern,LAVADO DE AUTOS EL PARCERO,Cerro Navia,4.5,16,Servicio de lavado de coches
+barrio-pattern,Lavado de Autos Petersen,Cerro Navia,5.0,1,Servicio de lavado de coches
+barrio-pattern,LAVADO DE AUTOS DCARWASH,Cerro Navia,4.5,2,Servicio de lavado de coches
 manual-reject,Lavado De Autos Cecilia,Quinta Normal,4.6,62,Servicio de lavado de coches
 ambiguous-category-no-strong-signal,ZEUS CLEAN LTDA.,Quinta Normal,4.5,4,Fábrica
 manual-reject,Rápido y Brilloso,Renca,5.0,3,Servicio de lavado de coches
+barrio-pattern,Lavado De Autos MANIZALES,Renca,4.8,42,Servicio de lavado de coches
 block-substr,"Pulidos, pintura y desabolladuria automotriz",Renca,4.3,4,Taller de reparación de automóviles
 block-substr,Carwash e Estacionamiento Plaza Quilicura,Quilicura,5.0,8,Servicio de lavado de coches
+barrio-pattern,Lavado de autos Vaposeco,Huechuraba,5.0,4,Servicio de lavado de coches
 block-substr,Autolavado detailing y Vulcanización,Huechuraba,5.0,4,Autoservicio de lavado de autos
-hard-block-category,Sicarfilms Spa.,San Bernardo,4.8,45,Servicio de polarizado de autos
+barrio-pattern,Autolavado IBAMA,Huechuraba,3.4,5,Servicio de lavado de coches
+category-not-whitelisted,Sicarfilms Spa.,San Bernardo,4.8,45,Servicio de polarizado de autos
 manual-reject,Centro Link,Colina,3.0,4,Servicio de lavado de coches
+barrio-pattern,Lavado de autos Underground,Lampa,4.4,7,Servicio de lavado de coches
 ambiguous-category-no-strong-signal,Automotriz RC SPA,Lampa,5.0,11,Taller de reparación de automóviles
-hard-block-category,Tu Espacio Automotriz,Melipilla,5.0,1,Servicio de autos compartidos
+category-not-whitelisted,Tu Espacio Automotriz,Melipilla,5.0,1,Servicio de autos compartidos
+category-not-whitelisted,MBC POWER CLEAN,Melipilla,5.0,6,Servicios de limpieza
+barrio-pattern,Lavado Full,Talagante,4.5,2,Servicio de lavado de coches
 manual-reject,Lavado de autos El Robert,Talagante,4.7,19,Servicio de lavado de coches
 block-substr,FullClean Lavaseco y Lavandería,Talagante,4.1,16,Lavandería
+barrio-pattern,Lavados de autos LVDS,Calera de Tango,5.0,4,Servicio de lavado de coches
+category-not-whitelisted,Lucchini Macchina SpA,Ñuñoa,5.0,5,Taller de reparación de motos
+block-substr,Comercial Dagaz Ltda (COPEC),San Joaquín,3.0,2,Servicio de lavado de coches
+category-not-whitelisted,Comercial Reysa SPA,El Bosque,4.7,72,Tienda de pinturas
+category-not-whitelisted,Lavado De Autos Ecologico Eco Zen,Estación Central,3.4,7,Gasolinera
+manual-reject,Focos,Melipilla,5.0,1,Autoservicio de lavado de autos
 block-substr,"ESTACIONAMIENTO ""R""",Santiago Centro,3.0,2,Servicio de lavado de coches
 manual-reject,Comercial C&I,Santiago Centro,3.0,2,Servicio de lavado de coches
 ambiguous-category-no-strong-signal,Automotriz jc spa,Santiago Centro,5.0,6,Taller de reparación de automóviles
+barrio-pattern,Lavado De Autos Josscar,Providencia,3.3,4,Servicio de lavado de coches
 manual-reject,Bass Audio Chile,Las Condes,4.1,101,Servicio de lavado de coches
-hard-block-category,Wash Detailing Pro,Lo Barnechea,4.5,2,Mercado de automóviles
-hard-block-category,Centro de Estética Belleza Integral,Buin,4.6,9,Centro de estética
+category-not-whitelisted,Wash Detailing Pro,Lo Barnechea,4.5,2,Mercado de automóviles
+barrio-pattern,Lavado de Autos FRAVEMA,La Florida,3.7,3,Servicio de lavado de coches
+barrio-pattern,Lavado Automotriz Muñoz,Cerrillos,5.0,5,Servicio de lavado de coches
+category-not-whitelisted,RACING CAR WASH,Cerrillos,5.0,1,Holanda 1765
+category-not-whitelisted,Centro de Estética Belleza Integral,Buin,4.6,9,Centro de estética
+category-not-whitelisted,Burbucar El Spa Del Automovil Spa,Santiago Centro,5.0,4,Tienda de neumáticos
+category-not-whitelisted,Automotriz Toesca (Soc. de Inv. Atenea Spa),Santiago Centro,4.7,20,Compraventa de automóviles
+category-not-whitelisted,Desarmaduria Fino Alvear Nc SPA,Santiago Centro,3.7,85,Proveedor de repuestos de carrocería de automóviles
+category-not-whitelisted,Car Service Center SPA,Santiago Centro,3.7,6,Servicio de alquiler de coches
+category-not-whitelisted,horus Chile SPA,Santiago Centro,5.0,14,Tienda de repuestos para automóvil
+category-not-whitelisted,Mecanica y spa automotriz E&C,Providencia,3.4,10,Planchista
+category-not-whitelisted,MOTORAMA SPA,Lo Barnechea,4.0,6,Tienda de repuestos de automóviles usados
+category-not-whitelisted,Monaco Automotriz SpA,La Granja,4.5,6,Compraventa de automóviles
+ambiguous-category-no-strong-signal,Servicio Automotriz San Cristobal SpA,San Ramón,4.8,20,Taller de automóviles
+ambiguous-category-no-strong-signal,Servicio Automotriz Febel spa,El Bosque,5.0,9,Taller de automóviles
+category-not-whitelisted,PINTURAS ECONOPIN Y OTROS SPA 🟣INTERIORES Y EXTERIORES,La Cisterna,5.0,1,Pintura
+category-not-whitelisted,Comercial Cromosar SPA,San Miguel,5.0,1,Tienda de repuestos para automóvil
+block-substr,Cerrajería Maipú SPA,Maipú,3.2,14,Cerrajería
+ambiguous-category-no-strong-signal,PJL Servicios Automotriz spa,Maipú,4.0,2,Taller de automóviles
+category-not-whitelisted,POWER BASS SPA,Maipú,3.3,21,Tienda de accesorios para automóviles
+category-not-whitelisted,Ingenieria Comercial Din Motors SPA,Quilicura,3.0,2,Compraventa de automóviles
+category-not-whitelisted,Taller Fce Automotriz Spa,Huechuraba,4.0,11,Asociación u organización
+category-not-whitelisted,Maira insumos automotriz SpA,Huechuraba,5.0,2,Tienda de accesorios para automóviles
+category-not-whitelisted,Comercializadora JFS Spa.,Conchalí,4.3,9,Comercio
+ambiguous-category-no-strong-signal,Sandoval Service Spa,Buin,5.0,27,Taller de automóviles
+category-not-whitelisted,"Lavado de DPF Melipilla, Descabonizacion de vehículos Bencineros y Petroleros.",Melipilla,4.8,4,Servicio de alquiler de coches
+block-substr,"Cerrajería, Asistencia en Ruta, Laminas de seguridad Ecolavado",Melipilla,5.0,9,Servicio de lavado de coches
+block-substr,5 Stars Barber Shop,Melipilla,4.5,44,Servicio de limpieza de automóviles
+category-not-whitelisted,House SPA,Talagante,4.7,37,Balneario
+ambiguous-category-no-strong-signal,COMERCIAL LA FAMILIA SPA,Calera de Tango,4.5,29,Taller de automóviles
 no-distinctive-content,Lavado de autos en Pedro Aguirre Cerda,Santiago Centro,4.0,15,Servicio de lavado de coches
-hard-block-category,Neymartin Estetica,Lo Barnechea,5.0,2,Esteticista
+category-not-whitelisted,Neymartin Estetica,Lo Barnechea,5.0,2,Esteticista
+barrio-pattern,Lavado de Automóviles,Ñuñoa,4.6,55,Servicio de lavado de coches
 block-substr,Láminas de seguridad y polarizado JR,La Granja,5.0,5,Servicio de limpieza de automóviles
 ambiguous-category-no-strong-signal,HAGALGAL SPA,Colina,4.5,57,Taller mecánico
 block-substr,MAXCOT LAVADOS GPS,Melipilla,4.7,3,Servicio de lavado de coches
-hard-block-category,"Ecoesthetic, Clínica Estética.",Talagante,5.0,29,Clínica especializada
+block-substr,"Ecoesthetic, Clínica Estética.",Talagante,5.0,29,Clínica especializada
+ambiguous-category-no-strong-signal,INGECAB CHILE SPA,Providencia,5.0,1,Taller de automóviles
+category-not-whitelisted,Alma Spa,Providencia,5.0,151,Spa
+category-not-whitelisted,JC CLIMATIZACION SPA,Las Condes,5.0,4,Tienda aire acondicionado
+category-not-whitelisted,Emporio Wheels spa,Las Condes,5.0,1,Juguetería
+category-not-whitelisted,Mundo Auto spa Chile,Lo Barnechea,3.0,7,Servicio de reparación de parabrisas y pantallas
+category-not-whitelisted,kaus spa,La Reina,5.0,3,Spa
+category-not-whitelisted,Auto Consulting Spa.,La Reina,5.0,1,Servicio de inversiones
+block-substr,Cerrajeria Auto key spa,Ñuñoa,4.9,8,Cerrajería
+category-not-whitelisted,REPAIRMAN CHILE SPA,Ñuñoa,5.0,1,Servicio de instalación eléctrica
+category-not-whitelisted,Deautos Decken SPA,Peñalolén,5.0,5,Tienda de techos corredizos para automóviles
+category-not-whitelisted,"Lavado de autos ""Los Chankas""",Peñalolén,3.5,2,Servicio de limpieza
+category-not-whitelisted,laminarte spa,La Florida,5.0,1,Walker Martínez 1937
+category-not-whitelisted,Ricardo's spa,La Pintana,5.0,1,Tienda de accesorios para automóviles
+category-not-whitelisted,Desarmaduria Repcar SPA,La Pintana,5.0,3,Proveedor de repuestos de carrocería de automóviles
+category-not-whitelisted,AUTO CENTER SPA,La Pintana,5.0,1,Av. Padre Hurtado 11573
+ambiguous-category-no-strong-signal,Diagnos y servicio automotriz GV SPA,La Pintana,5.0,3,Taller de automóviles
+category-not-whitelisted,Importadora CABCAR spa,La Pintana,5.0,1,Tienda de accesorios para automóviles
+category-not-whitelisted,EL SHADDAI SPA,La Cisterna,5.0,7,Tienda de accesorios para automóviles
+category-not-whitelisted,Valdes y Valdes SpA ( Cristian Chocados ),La Cisterna,3.7,6,Compraventa de automóviles
+ambiguous-category-no-strong-signal,Napal Motors Spa,La Cisterna,4.6,13,Taller de automóviles
+ambiguous-category-no-strong-signal,sr tapiz spa,La Cisterna,5.0,4,Tapicería para automóviles
+category-not-whitelisted,SPA Y MASAJES LOS ANGELES,San Miguel,5.0,3,Spa de masajes
+category-not-whitelisted,Tiremaxx spa,San Miguel,4.6,19,Tienda de neumáticos
+category-not-whitelisted,Canela Spa,Estación Central,4.8,19,Spa y gimnasio
+category-not-whitelisted,reji car spa,Maipú,4.8,25,Tienda de repuestos para automóvil
+category-not-whitelisted,MOTORPRO SPA,Maipú,4.2,27,Servicio de reacondicionamiento de motores
+category-not-whitelisted,Comercial Chevrowagen SPA,Maipú,5.0,3,Tienda de repuestos para automóvil
+category-not-whitelisted,Sociedad Comercializadora Gamadix SpA,Cerro Navia,5.0,5,Comercio
+ambiguous-category-no-strong-signal,CLASSIC MONKEY GARAGE spa,Cerro Navia,3.0,2,Taller de automóviles
+ambiguous-category-no-strong-signal,AMS Services spa,Cerro Navia,5.0,2,Taller de automóviles
+category-not-whitelisted,IMPORTADORA FEI HONG SPA,Pudahuel,5.0,1,Tienda de repuestos para automóvil
+category-not-whitelisted,Carga Fácil Spa,Pudahuel,5.0,13,Servicio de transporte
+category-not-whitelisted,Auto vidrios JyD spa,Pudahuel,5.0,2,Servicio de reparación para vidrios de automóviles
+ambiguous-category-no-strong-signal,Rectificadora Servi Motores R SpA,Quinta Normal,5.0,3,Taller de automóviles
+category-not-whitelisted,B&P Gas Service SPA.,Quinta Normal,5.0,4,Servicio de instalación de gas
+ambiguous-category-no-strong-signal,Red de diagnóstico spa,Renca,5.0,1,Taller de automóviles
+category-not-whitelisted,SCT GERMANY SPA,Renca,4.8,4,Importador
+ambiguous-category-no-strong-signal,Servicio Tecnico Campanario Spa,Huechuraba,3.3,67,Taller de automóviles
+category-not-whitelisted,Inversiones RS Santiago SPA,Conchalí,4.5,14,Tienda de repuestos de automóviles usados
+category-not-whitelisted,dr cars autospa,Recoleta,5.0,3,Planchista
+category-not-whitelisted,DF MOTORS SPA,Recoleta,4.4,5,Tienda de repuestos para automóvil
+category-not-whitelisted,Comercial Asian Group Spa,Recoleta,5.0,1,Tienda de repuestos para automóvil
+category-not-whitelisted,Autorefac SpA,Puente Alto,5.0,1,Tienda de repuestos para automóvil
+ambiguous-category-no-strong-signal,Mecánica Espósito SpA,Puente Alto,5.0,2,Taller de automóviles
+manual-reject,Servicio De Mantencion Y Lavado De Vehiculos Motor,Puente Alto,4.0,1,Servicio de lavado de coches
+category-not-whitelisted,Bacam Motos SpA,San Bernardo,5.0,97,Tienda de repuestos para motos
+category-not-whitelisted,Gonzalez Cars SpA desarmaduria,Lampa,5.0,2,Tienda de repuestos para automóvil
+ambiguous-category-no-strong-signal,Taller Diego Orellana SPA,Lampa,3.7,3,Taller de automóviles
+ambiguous-category-no-strong-signal,Car Security Spa,Melipilla,4.2,5,Taller de automóviles
+category-not-whitelisted,Lubricantes Petroli SpA,Melipilla,5.0,1,Proveedor de accesorios para afinación automotriz
+category-not-whitelisted,Club Moto Spa.,Peñaflor,3.0,2,Tienda de repuestos para motos
+category-not-whitelisted,JC Clean Limpieza de alfombra,Peñaflor,5.0,16,Servicio de limpieza de alfombras
+category-not-whitelisted,LuViCaro Spa,Talagante,5.0,5,Spa de día
+block-substr,Cerrajería y Asistencia en Ruta EcoLavado,Talagante,5.0,9,Servicio de lavado de coches
+manual-reject,Fresh Market,Talagante,3.8,31,Servicio de lavado de coches

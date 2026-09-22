@@ -74,9 +74,12 @@ COMUNAS = [
 ]
 
 DETAILING_KEYWORDS = [
-    "detailing automotriz", "car detailing", "auto detailing", "detailing de autos",
-    "estetica automotriz", "lavado premium de autos", "sellado ceramico automotriz",
-    "auto spa detailing", "encerado y brillado de autos", "detailing de lujo",
+    # tanda 2 (las 10 de la tanda 1 ya estan agotadas por dedup): frases
+    # distintas para que Maps devuelva otro top-40
+    "ceramic coating autos", "proteccion ceramica autos", "car spa",
+    "autolavado premium", "lavado y detailing de autos", "lavado interior de autos tapiz",
+    "pulido y encerado de autos", "detailing studio", "detailing garage",
+    "restauracion de focos autos", "spa automotriz", "lavado a mano de autos",
 ]
 
 
@@ -94,31 +97,64 @@ def _norm(s):
 
 
 # --- filtro de "detailing puro + nombre con identidad" a nivel de tarjeta ---
+# Incluye las reglas que hubo que agregar a mano en la revision de la tanda 1
+# (categorias de otro rubro, talleres con senal debil, frases de relleno).
 BLOCK_NAME_SUBSTR = [_norm(s) for s in [
-    'desabolladura', 'chapa y pintura', 'pintura al horno', 'carrozzier',
-    'lubricentro', 'caneria', 'inmovilizador', ' gps ', 'neumatico',
+    'desabolladur', 'chapa', 'pintura al horno', 'carrozzier',
+    'lubricentro', 'caneria', 'inmovilizador', ' gps ', 'gps', 'neumatic',
     'frenos', 'suspension', 'alineacion', 'balanceo', 'repuestos',
     'mecanica general', 'remolque', 'grua ', 'radiador', 'escape',
+    'vulcaniza', 'polarizado', 'estacionamiento', 'lavaseco y lavanderia',
+    'lavamoto', 'lavanderia', 'clinica', 'audio',
 ]]
+# OJO: 'spa' NO va suelta aca -- choca con el sufijo legal chileno "SpA"
+# (Sociedad por Accciones) que aparece en el nombre de empresas de CUALQUIER
+# rubro. Solo cuenta como senal si viene pegada a auto/car (ver mas abajo).
 DETAILING_SIGNAL_WORDS_NAME = [_norm(s) for s in [
-    'detailing', 'detallado', 'estetica', 'spa', 'wash', 'lavado', 'pulido',
+    'detailing', 'detallado', 'estetica', 'wash', 'lavado', 'pulido',
     'pulida', 'encerado', 'sellado', 'brillado', 'carwash', 'ceramico',
     'ceramica', 'lavamovil', 'shine', 'polish', 'clean', 'car care',
+    'auto spa', 'car spa', 'spa automotriz', 'spa de auto', 'autospa', 'carspa',
 ]]
 ALLOWED_CATEGORY_SIGNALS = {_norm(s) for s in [
     'Servicio de limpieza de automóviles', 'Servicio de lavado de coches',
     'Autoservicio de lavado de autos', 'Servicio de detallado de automóviles',
     'Servicio de detallado de embarcaciones', 'Servicio de encerado de automóviles',
+    'Servicio de lavado a presión',
 ]}
+# categorias de Maps de otro rubro: se descartan siempre
+HARD_BLOCK_CATEGORIES = {_norm(c) for c in [
+    'Clínica especializada', 'Esteticista', 'Centro de estética',
+    'Servicio de autos compartidos', 'Aparcamiento de coches compartidos',
+    'Lavandería', 'Servicio de polarizado de autos', 'Mercado de automóviles',
+]}
+# categorias ambiguas (taller/tienda mal etiquetado): solo pasan si el nombre
+# trae una senal fuerte de detailing
+AMBIGUOUS_CATEGORIES = {_norm(c) for c in [
+    'Taller de reparación de automóviles', 'Taller de chapa y pintura',
+    'Taller mecánico', 'Taller de revisión de automóviles', 'Fábrica',
+    'Tienda de automovilismo', 'Pintura de automóviles',
+]}
+STRONG_SIGNAL = [_norm(s) for s in [
+    'detailing', 'detallado', 'pulido', 'pulida', 'encerado',
+    'sellado ceramico', 'estetica automotriz', 'car wash', 'carwash',
+]]
 GENERIC_FILLER_TOKENS = {_norm(s) for s in [
     'taller', 'servicio', 'servicios', 'automotriz', 'automotor', 'autos', 'auto',
     'de', 'del', 'y', 'la', 'el', 'los', 'las', 'lavado', 'lavados', 'detailing',
     'detallado', 'estetica', 'car', 'wash', 'carwash', 'spa', 'limpieza', 'pulido',
     'pulida', 'encerado', 'brillado', 'sellado', 'ceramico', 'ceramica', 'premium',
     'express', 'central', 'economico', 'economica', 'rapido', 'rapida', 'lujo',
-    'basico', 'basica', 'multimarca', 'particular',
+    'basico', 'basica', 'multimarca', 'particular', 'domicilio', 'en', 'a', 'un',
+    'una', 'con', 'para', 'sin', 'autolavado', 'lavadero', 'centro',
 ]}
 COMUNA_TOKENS = {_norm(w) for c in COMUNAS for w in c.split()}
+# nombre propio pelado con servicio generico ("Lavado de Autos Cecilia",
+# "Taller Miguel"): patron de barrio que el usuario pidio evitar
+BARRIO_RE = re.compile(
+    r"^(taller|servicio|lavado(s)?( de)?( autos?| auto| automotriz| vehiculos?)?|lavadero( de autos)?|autolavado)"
+    r"\s+(el |la |don |dona |doña )?[a-z]{3,12}$"
+)
 
 
 def _name_words(name):
@@ -136,16 +172,22 @@ def is_pure_detailing_brand(rec):
     if any(b in name_n for b in BLOCK_NAME_SUBSTR):
         return False
     cat_n = _norm(rec.get("category") or "")
-    has_name_signal = any(s in name_n for s in DETAILING_SIGNAL_WORDS_NAME)
+    if cat_n in HARD_BLOCK_CATEGORIES:
+        return False
+    if cat_n in AMBIGUOUS_CATEGORIES and not any(sg in name_n for sg in STRONG_SIGNAL):
+        return False
+    has_name_signal = any(sg in name_n for sg in DETAILING_SIGNAL_WORDS_NAME)
     has_cat_signal = cat_n in ALLOWED_CATEGORY_SIGNALS
     if not (has_name_signal or has_cat_signal):
         return False
     if not has_distinctive_content(rec["name"]):
         return False
+    if BARRIO_RE.match(name_n.strip()):
+        return False
     return True
 
 
-# --- resto del pipeline: identico a scrape_taller.py ---
+# --- resto del pipeline (sin sitio web real, local fijo, antiguedad, no cadena) ---
 DEALER_WORDS = ['concesionario', 'distribuidor oficial', 'servicio oficial', 'agencia oficial', 'sucursal']
 BRANDS = [
     'toyota', 'chevrolet', 'nissan', 'hyundai', ' kia ', 'kia motors', 'suzuki',
